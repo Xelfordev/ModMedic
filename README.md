@@ -156,5 +156,5 @@ ModMedic is open source under the GNU General Public License v3.0. See [LICENSE]
 ---
 
 <p align="center">
-  Created by <a href="https://github.com/Xelfordev">PimpDuck</a> — available on the <a href="https://spigotmc.org/">Spigot Resource</a> page.
+  Created by <a href="https://xelforo.lovestoblog.com">PimpDuck</a> — available on the <a href="https://spigotmc.org/">Spigot Resource</a> page.
 </p>
