@@ -1,4 +1,5 @@
 <div align="center">
+  <img src="logo.svg" alt="ModMedic" width="128">
   <h1>ModMedic</h1>
   <p><strong>Real-time error diagnostics for Paper server plugins</strong></p>
   <p>
