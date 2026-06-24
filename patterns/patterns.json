@@ -1,0 +1,676 @@
+{
+  "version": 1,
+  "description": "ModMedic error pattern database — common Paper/Spigot plugin errors and fixes",
+  "patterns": [
+    {
+      "id": "npe-config-getstring",
+      "name": "Null config value",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getConfig().getString"
+      },
+      "diagnosis": "The plugin tried to read a config path that doesn't exist in config.yml. Config#getString() returns null for missing paths.",
+      "suggested_fix": "Add the missing config path to the plugin's config.yml, or use getString(\"path\", \"default\") to supply a fallback.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-config-getint",
+      "name": "Null config integer",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getConfig().getInt"
+      },
+      "diagnosis": "The plugin tried to read a config integer that doesn't exist or is malformed.",
+      "suggested_fix": "Verify the config path exists in config.yml and contains a valid integer. Use getInt(\"path\", 0) to supply a default.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-config-getlist",
+      "name": "Null config list",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getConfig().getList"
+      },
+      "diagnosis": "The plugin tried to read a config list that doesn't exist.",
+      "suggested_fix": "Verify the list path exists in config.yml. Use getList(\"path\", new ArrayList<>()) to supply a default.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-player-getname",
+      "name": "Null player reference",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": ".getName()"
+      },
+      "diagnosis": "A player object was null when the plugin tried to call getName() on it. This usually means the player went offline or was never properly fetched.",
+      "suggested_fix": "Add a null check before using the player: if (player == null) return; or use Bukkit.getPlayerExact(name) instead of Bukkit.getPlayer(name).",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-world-getblock",
+      "name": "Null world at location",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": ".getBlockAt"
+      },
+      "diagnosis": "A Location object had a null world when the plugin tried to access a block at that location. Likely from deserializing a location without saving the world name.",
+      "suggested_fix": "Ensure the Location's world is set. When deserializing, verify the world still exists with Bukkit.getWorld(worldName).",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-inventory-itemstack",
+      "name": "Null item in inventory slot",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getItemInMainHand"
+      },
+      "diagnosis": "The player's main hand item was null. This usually happens when checking an empty hand without a null check.",
+      "suggested_fix": "Check if the item is null before using it: if (item == null || item.getType() == Material.AIR) return;",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-entity-isliving",
+      "name": "Non-living entity cast",
+      "severity": "medium",
+      "match": {
+        "error_type": "ClassCastException",
+        "stacktrace_contains": "Cannot cast"
+      },
+      "diagnosis": "The plugin tried to cast an entity to LivingEntity or Player without checking the type first.",
+      "suggested_fix": "Add an instanceof check before casting: if (entity instanceof Player) { Player p = (Player) entity; }",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-metadata",
+      "name": "Null metadata value",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getMetadata"
+      },
+      "diagnosis": "The plugin called getMetadata() on an entity or world but found no metadata set. getMetadata() returns an empty list, not null, but .get(0) on an empty list throws.",
+      "suggested_fix": "Check if the metadata list is empty before accessing: if (!entity.hasMetadata(key)) return; List<MetadataValue> values = entity.getMetadata(key);",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchmethod-getiteminhand",
+      "name": "Removed getItemInHand()",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchMethodError",
+        "message_contains": "getItemInHand"
+      },
+      "diagnosis": "getItemInHand() was removed in Minecraft 1.16+. The plugin was compiled against an older API.",
+      "suggested_fix": "Replace getItemInHand() with getInventory().getItemInMainHand() for the main hand, or getInventory().getItemInOffHand() for the off hand.",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchmethod-getname-itemstack",
+      "name": "Removed ItemStack.getName()",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchMethodError",
+        "message_contains": "getName"
+      },
+      "diagnosis": "ItemStack.getName() was removed in 1.13+. The plugin was compiled against an older API.",
+      "suggested_fix": "Use ItemMeta.getDisplayName() instead: item.getItemMeta().getDisplayName()",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchmethod-setamount",
+      "name": "Removed ItemStack.setAmount(int)",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchMethodError",
+        "message_contains": "setAmount"
+      },
+      "diagnosis": "ItemStack constructor with amount changed in newer API versions.",
+      "suggested_fix": "Use new ItemStack(Material, int) constructor or item.setAmount(int) method separately.",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchclass-thrownpotion",
+      "name": "Removed ThrownPotion class",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchMethodError",
+        "message_contains": "ThrownPotion"
+      },
+      "diagnosis": "ThrownPotion class was changed/removed in newer versions. The entity class for thrown potions changed.",
+      "suggested_fix": "Use the new class name or spawn a Potion entity instead. Check the Paper API for the current equivalent.",
+      "auto_fix": null
+    },
+    {
+      "id": "classnotfound-driver",
+      "name": "Missing JDBC driver",
+      "severity": "high",
+      "match": {
+        "error_type": "ClassNotFoundException",
+        "message_contains": "com.mysql"
+      },
+      "diagnosis": "The MySQL JDBC driver is not installed on the server. The plugin requires a database driver library.",
+      "suggested_fix": "Place the MySQL Connector/J jar in the server's lib/ folder or the plugin's folder. Download from: https://dev.mysql.com/downloads/connector/j/",
+      "auto_fix": null
+    },
+    {
+      "id": "classnotfound-sqlite",
+      "name": "Missing SQLite driver",
+      "severity": "high",
+      "match": {
+        "error_type": "ClassNotFoundException",
+        "message_contains": "org.sqlite"
+      },
+      "diagnosis": "The SQLite JDBC driver is not available. Paper includes it by default, but some older setups may be missing it.",
+      "suggested_fix": "Add the SQLite JDBC jar to the classpath, or ensure you're using a modern Paper build (1.16.5+ includes it).",
+      "auto_fix": null
+    },
+    {
+      "id": "classnotfound-plugin-class",
+      "name": "Plugin class not found",
+      "severity": "critical",
+      "match": {
+        "error_type": "ClassNotFoundException",
+        "stacktrace_contains": "PluginClassLoader"
+      },
+      "diagnosis": "The plugin's main class was not found inside the jar. The plugin.yml points to a class that doesn't exist, or the jar is corrupted.",
+      "suggested_fix": "Verify the 'main:' field in plugin.yml matches the fully qualified class name inside the jar. Rebuild and redeploy the plugin.",
+      "auto_fix": null
+    },
+    {
+      "id": "noclassdeffound-dependency",
+      "name": "Missing dependency library",
+      "severity": "critical",
+      "match": {
+        "error_type": "NoClassDefFoundError",
+        "stacktrace_contains": "PluginClassLoader"
+      },
+      "diagnosis": "A required library is missing. The plugin was compiled against a library not present on the server.",
+      "suggested_fix": "Install the required library jar in the plugins/ folder or the server's lib/ folder. Check the plugin's documentation for dependencies.",
+      "auto_fix": null
+    },
+    {
+      "id": "unsupported-class-version",
+      "name": "Compiled with wrong Java version",
+      "severity": "critical",
+      "match": {
+        "error_type": "UnsupportedClassVersionError",
+        "message_contains": "unsupported"
+      },
+      "diagnosis": "The plugin was compiled with a newer Java version than the server is running. Java major version mismatch.",
+      "suggested_fix": "Recompile the plugin with --release matching the server's Java version (e.g., Java 21 for Paper 1.21). Or update the server to a newer Java version.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-negative-amount",
+      "name": "Negative item amount",
+      "severity": "medium",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "Amount"
+      },
+      "diagnosis": "The plugin tried to create or set an item with a negative or zero amount.",
+      "suggested_fix": "Ensure item amounts are always between 1 and 64. Add validation before creating items.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-invalid-material",
+      "name": "Invalid or removed Material",
+      "severity": "high",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "Material"
+      },
+      "diagnosis": "The plugin used a Material name that was renamed or removed in this Minecraft version (e.g., STATIONARY_WATER → WATER in 1.13).",
+      "suggested_fix": "Update the Material name to the current equivalent. Use Material.matchMaterial(name, false) with legacy name support, or use Material.getMaterial() with the modern namespaced key.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-enchantment-level",
+      "name": "Invalid enchantment level",
+      "severity": "low",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "Enchantment"
+      },
+      "diagnosis": "The plugin tried to add an enchantment with an invalid level (below 1 or above the max).",
+      "suggested_fix": "Clamp enchantment levels to the valid range. Check Enchantment.getMaxLevel() and ensure level ≥ 1.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-chunk-not-loaded",
+      "name": "Chunk not loaded",
+      "severity": "high",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "not loaded"
+      },
+      "diagnosis": "The plugin tried to access a chunk that isn't loaded. Operations on unloaded chunks throw this error.",
+      "suggested_fix": "Call chunk.isLoaded() before accessing it, or use chunk.load() to load it first. For world operations, ensure the world is loaded with Bukkit.getWorld(name) != null.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-world-not-found",
+      "name": "World not found",
+      "severity": "high",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "World"
+      },
+      "diagnosis": "The plugin tried to access a world that doesn't exist or isn't loaded.",
+      "suggested_fix": "Check if the world exists before accessing: if (Bukkit.getWorld(name) == null) return; Verify the world name is correct and the world folder exists.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalargument-ticks-invalid",
+      "name": "Invalid tick value",
+      "severity": "low",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "tick"
+      },
+      "diagnosis": "The plugin passed an invalid tick value to a scheduler or potion effect (e.g., negative duration).",
+      "suggested_fix": "Ensure tick durations are positive. Add validation before scheduling tasks or creating potion effects.",
+      "auto_fix": null
+    },
+    {
+      "id": "schedulertask-already-cancelled",
+      "name": "Already cancelled task",
+      "severity": "low",
+      "match": {
+        "error_type": "IllegalStateException",
+        "message_contains": "cancel"
+      },
+      "diagnosis": "The plugin tried to cancel a scheduler task that was already cancelled or completed.",
+      "suggested_fix": "Track the task ID and only cancel if it's not null and not already cancelled. Check task.isCancelled() before cancelling.",
+      "auto_fix": null
+    },
+    {
+      "id": "illegalstate-config-save",
+      "name": "Config save failed",
+      "severity": "medium",
+      "match": {
+        "error_type": "IllegalStateException",
+        "message_contains": "save"
+      },
+      "diagnosis": "Failed to save the config file. The file may be locked by another process, or the disk is full.",
+      "suggested_fix": "Check file permissions and disk space. Ensure no other process has the config file open. Try saveConfig() again after a short delay.",
+      "auto_fix": null
+    },
+    {
+      "id": "invalidworldborder",
+      "name": "Invalid world border size",
+      "severity": "low",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "border"
+      },
+      "diagnosis": "The plugin tried to set a world border with an invalid size (e.g., negative or too large).",
+      "suggested_fix": "Ensure the world border size is between 1 and 60000000. Add validation before setting the border.",
+      "auto_fix": null
+    },
+    {
+      "id": "concurrentmodification-list",
+      "name": "Concurrent modification",
+      "severity": "medium",
+      "match": {
+        "error_type": "ConcurrentModificationException"
+      },
+      "diagnosis": "The plugin modified a collection while iterating over it (e.g., removing entities from a list while looping).",
+      "suggested_fix": "Use an Iterator with iterator.remove(), or collect items to remove in a separate list and remove them after the loop.",
+      "auto_fix": null
+    },
+    {
+      "id": "sockettimeout-database",
+      "name": "Database connection timeout",
+      "severity": "high",
+      "match": {
+        "error_type": "java.net.SocketTimeoutException",
+        "message_contains": "connect"
+      },
+      "diagnosis": "The database connection timed out. The database server may be down, the connection string may be wrong, or a firewall is blocking the port.",
+      "suggested_fix": "Verify the database server is running and reachable. Check the connection string in the plugin config. Ensure the port (default 3306 for MySQL) is open.",
+      "auto_fix": null
+    },
+    {
+      "id": "syntaxerror-config-yml",
+      "name": "Invalid YAML syntax",
+      "severity": "high",
+      "match": {
+        "error_type": "org.yaml.snakeyaml.error.YAMLException"
+      },
+      "diagnosis": "The config.yml has invalid YAML syntax (tab instead of spaces, missing colon, etc.). The plugin failed to load.",
+      "suggested_fix": "Check the config.yml for YAML errors. Use an online YAML validator. Never use tabs — only spaces. Ensure colons are followed by a space.",
+      "auto_fix": null
+    },
+    {
+      "id": "filenotfound-config",
+      "name": "Config file missing",
+      "severity": "medium",
+      "match": {
+        "error_type": "FileNotFoundException",
+        "message_contains": "config"
+      },
+      "diagnosis": "A config file the plugin expects was not found. Some plugins require a config to be created manually.",
+      "suggested_fix": "Restart the server to let the plugin generate the default config, or manually create the config.yml in the plugin's folder.",
+      "auto_fix": null
+    },
+    {
+      "id": "invalidargument-offlineplayer",
+      "name": "Invalid player name",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getOfflinePlayer"
+      },
+      "diagnosis": "The plugin called getOfflinePlayer() with a null or invalid player name.",
+      "suggested_fix": "Add a null check for the player name before calling getOfflinePlayer(). Bukkit.getOfflinePlayer() does not throw but may behave unexpectedly with null.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-location-world",
+      "name": "Null world in Location",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "Location.getWorld"
+      },
+      "diagnosis": "A Location object was created without setting its world, or the world was unloaded.",
+      "suggested_fix": "Always set the world when creating a Location: new Location(world, x, y, z). When loading from config, verify the world exists with Bukkit.getWorld(name).",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-creature-spawn",
+      "name": "Failed entity spawn",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "spawn"
+      },
+      "diagnosis": "The entity spawn returned null. This can happen if the location is invalid, the chunk isn't loaded, or the entity type doesn't exist.",
+      "suggested_fix": "Check that the location's world is loaded, the chunk is loaded, and the entity type is valid for this Minecraft version.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-scoreboard-tag",
+      "name": "Null scoreboard tag",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getScoreboard"
+      },
+      "diagnosis": "The server's scoreboard was null or the plugin tried to add a tag to a non-existent team.",
+      "suggested_fix": "Use Bukkit.getScoreboardManager().getMainScoreboard() and check for null. Ensure teams exist before adding players with getTeam(name) != null checks.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-potion-effect-type",
+      "name": "Unknown potion effect type",
+      "severity": "high",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "PotionEffectType"
+      },
+      "diagnosis": "The plugin used a PotionEffectType name that was renamed or doesn't exist in this version (e.g., CONFUSION → NAUSEA, JUMP → JUMP_BOOST).",
+      "suggested_fix": "Update renamed potion effect types: CONFUSION → NAUSEA, JUMP → JUMP_BOOST, SLOW → SLOWNESS, FAST_DIGGING → HASTE.",
+      "auto_fix": null
+    },
+    {
+      "id": "invalidpotiontype",
+      "name": "Remove potion effect type",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "PotionEffectType."
+      },
+      "diagnosis": "A PotionEffectType constant no longer exists or was renamed. Common renames in 1.20.5+ affect many effect types.",
+      "suggested_fix": "Check the current Paper API documentation for the correct PotionEffectType name. The constants follow Minecraft registry names.",
+      "auto_fix": null
+    },
+    {
+      "id": "classcast-exception-entity",
+      "name": "Wrong entity cast",
+      "severity": "high",
+      "match": {
+        "error_type": "ClassCastException",
+        "stacktrace_contains": "org.bukkit.entity"
+      },
+      "diagnosis": "The plugin tried to cast an entity to a type it isn't (e.g., casting a Skeleton to a Creeper).",
+      "suggested_fix": "Use instanceof checks before casting. Entity types may have been renamed between Minecraft versions (e.g., PIG_ZOMBIE → ZOMBIFIED_PIGLIN).",
+      "auto_fix": null
+    },
+    {
+      "id": "entitytype-removed",
+      "name": "Removed EntityType",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchFieldError",
+        "message_contains": "EntityType"
+      },
+      "diagnosis": "The plugin used an EntityType that was removed or renamed. Common renames: MUSHROOM_COW → MOOSHROOM, SNOWMAN → SNOW_GOLEM, PIG_ZOMBIE → ZOMBIFIED_PIGLIN.",
+      "suggested_fix": "Update to the modern EntityType name. Check Paper API for the current name.",
+      "auto_fix": null
+    },
+    {
+      "id": "incompatible-commandsender",
+      "name": "Console-only command used by player",
+      "severity": "low",
+      "match": {
+        "error_type": "ClassCastException",
+        "stacktrace_contains": "CommandSender"
+      },
+      "diagnosis": "The plugin assumed a command sender was always a Player. When run from console, the cast fails.",
+      "suggested_fix": "Check if sender instanceof Player before casting. If not, send a message telling the user this command must be run in-game.",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchfield-creaturetype",
+      "name": "Removed CreatureType",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchFieldError",
+        "message_contains": "CreatureType"
+      },
+      "diagnosis": "CreatureType was removed in 1.11+. The plugin needs to use EntityType instead.",
+      "suggested_fix": "Replace CreatureType with EntityType. Use world.spawn(location, EntityType.ZOMBIE.getEntityClass()) instead of world.spawnCreature(location, CreatureType.ZOMBIE).",
+      "auto_fix": null
+    },
+    {
+      "id": "nosuchmethod-creaturespawn",
+      "name": "Removed spawnCreature()",
+      "severity": "high",
+      "match": {
+        "error_type": "NoSuchMethodError",
+        "message_contains": "spawnCreature"
+      },
+      "diagnosis": "World.spawnCreature() was removed in 1.11+. The plugin needs to use World.spawn() instead.",
+      "suggested_fix": "Replace world.spawnCreature(loc, type) with world.spawn(loc, EntityType.ZOMBIE.getEntityClass()).",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-canceltask",
+      "name": "Cancel null task",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "cancel"
+      },
+      "diagnosis": "The plugin tried to cancel a task that was never scheduled (task ID was never assigned or BukkitTask is null).",
+      "suggested_fix": "Check if the task is null before cancelling: if (task != null) task.cancel();",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-getfireworkmeta",
+      "name": "Null FireworkMeta",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getFireworkMeta"
+      },
+      "diagnosis": "The item was not a firework, so getFireworkMeta() returned null.",
+      "suggested_fix": "Check that the item's type is Material.FIREWORK_ROCKET before retrieving its FireworkMeta.",
+      "auto_fix": null
+    },
+    {
+      "id": "invalid-location-spawn",
+      "name": "Invalid spawn location",
+      "severity": "medium",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "Location"
+      },
+      "diagnosis": "The plugin tried to spawn an entity at an invalid location (e.g., outside the world border or in an unloaded chunk).",
+      "suggested_fix": "Validate the location before spawning: check world != null, chunk.isLoaded(), and location is within the world border.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-command-map",
+      "name": "Null command registration",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getCommand"
+      },
+      "diagnosis": "The plugin tried to register a command executor for a command that doesn't exist in plugin.yml.",
+      "suggested_fix": "Ensure the command is listed in plugin.yml under the 'commands:' section with the exact same name.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-player-close-inventory",
+      "name": "Null player inventory",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "closeInventory"
+      },
+      "diagnosis": "The plugin tried to close a null inventory or called closeInventory() on a null player.",
+      "suggested_fix": "Check if the player is online and not null before calling closeInventory().",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-itemmeta-displayname",
+      "name": "Null ItemMeta display name",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getDisplayName"
+      },
+      "diagnosis": "The plugin called getDisplayName() on null ItemMeta, or the item itself was null.",
+      "suggested_fix": "Add null checks: if (item == null || item.getItemMeta() == null) return;",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-player-getopeninventory",
+      "name": "Null open inventory",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getOpenInventory"
+      },
+      "diagnosis": "The player's open inventory was null. This can happen if the player logged out while an inventory was open.",
+      "suggested_fix": "Check if the player is online before accessing their inventory. Wrap in a try-catch or add null checks.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-chatcolor",
+      "name": "Null ChatColor formatting",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "translateAlternateColorCodes"
+      },
+      "diagnosis": "The plugin passed a null string to ChatColor.translateAlternateColorCodes() or a similar color method.",
+      "suggested_fix": "Ensure the string is not null before applying color codes. Add a null check before the translate call.",
+      "auto_fix": null
+    },
+    {
+      "id": "invalidmaterial",
+      "name": "Invalid Material enum",
+      "severity": "high",
+      "match": {
+        "error_type": "IllegalArgumentException",
+        "message_contains": "not found"
+      },
+      "diagnosis": "The plugin tried to use a Material value that doesn't exist in this Minecraft version. Materials were renamed in 1.13 (The Flattening).",
+      "suggested_fix": "Use Material.matchMaterial(name) which returns null for invalid names, or use the namespaced key format (minecraft:stone).",
+      "auto_fix": null
+    },
+    {
+      "id": "bad-entity-type-arrow",
+      "name": "Entity projectile cast error",
+      "severity": "medium",
+      "match": {
+        "error_type": "ClassCastException",
+        "stacktrace_contains": "Arrow"
+      },
+      "diagnosis": "The plugin tried to cast a Projectile to Arrow, but it was a different projectile type (trident, snowball, etc.).",
+      "suggested_fix": "Use instanceof Arrow check before casting, or check the projectile type with instanceof checks for each type you handle.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-warning-pluginyml",
+      "name": "plugin.yml load warning",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "plugin.yml"
+      },
+      "diagnosis": "The plugin's plugin.yml is missing a required field such as 'name', 'version', or 'main'.",
+      "suggested_fix": "Verify plugin.yml contains: name, version, main (fully qualified class path), and api-version for modern servers.",
+      "auto_fix": null
+    },
+    {
+      "id": "missing-api-version",
+      "name": "Missing api-version in plugin.yml",
+      "severity": "high",
+      "match": {
+        "error_type": "Exception",
+        "message_contains": "api-version"
+      },
+      "diagnosis": "The plugin is missing the 'api-version' field in plugin.yml. Paper requires it for plugins targeting 1.13+.",
+      "suggested_fix": "Add 'api-version: 1.21' (or your target version) to plugin.yml. This tells Paper which API version the plugin was compiled against.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-worlddifficulty",
+      "name": "Null difficulty",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getDifficulty"
+      },
+      "diagnosis": "The world's difficulty returned null. This can happen on first world load or when the world data is corrupted.",
+      "suggested_fix": "Set the difficulty in server.properties or server.yml, or check for null before using the difficulty value.",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-blockdata",
+      "name": "Null BlockData",
+      "severity": "medium",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getBlockData"
+      },
+      "diagnosis": "The block at the location had no BlockData. This can happen if the chunk is unloaded or the location is outside the world.",
+      "suggested_fix": "Check if the chunk is loaded and the location is within the world's bounds before calling getBlockData().",
+      "auto_fix": null
+    },
+    {
+      "id": "npe-inventory-title",
+      "name": "Null inventory title",
+      "severity": "low",
+      "match": {
+        "error_type": "NullPointerException",
+        "stacktrace_contains": "getTitle"
+      },
+      "diagnosis": "The plugin tried to get the title of an inventory that was created without one, or the inventory view was closed.",
+      "suggested_fix": "Set a title when creating the inventory with Bukkit.createInventory(owner, size, title). Check for null before calling getTitle().",
+      "auto_fix": null
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+/* ModMedic Dark Theme */
+.root {
+    -fx-base: #1e1e1e;
+    -fx-background: #1e1e1e;
+    -fx-control-inner-background: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+    -fx-font-family: "Segoe UI";
+}
+
+.tab-pane {
+    -fx-tab-min-width: 120;
+}
+
+.tab-header-background {
+    -fx-background-color: #252525;
+}
+
+.tab {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.tab:selected {
+    -fx-background-color: #3a3a5c;
+}
+
+.table-view {
+    -fx-background-color: #2d2d2d;
+    -fx-table-cell-border-color: #3a3a3a;
+}
+
+.table-view .column-header {
+    -fx-background-color: #333355;
+    -fx-text-fill: #ffffff;
+}
+
+.table-row-cell {
+    -fx-background-color: #2d2d2d;
+    -fx-text-fill: #e0e0e0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #4444aa;
+}
+
+.text-area {
+    -fx-control-inner-background: #1a1a1a;
+    -fx-text-fill: #e0e0e0;
+    -fx-highlight-fill: #4444aa;
+}
+
+.label {
+    -fx-text-fill: #e0e0e0;
+}
+
+.button {
+    -fx-background-color: #4444aa;
+    -fx-text-fill: white;
+}
+
+.button:hover {
+    -fx-background-color: #5555cc;
+}
+
+.scroll-bar {
+    -fx-background-color: #2d2d2d;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #555555;
+}
+
+.split-pane {
+    -fx-background-color: #1e1e1e;
+}

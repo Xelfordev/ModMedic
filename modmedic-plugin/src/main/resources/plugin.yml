@@ -1,0 +1,8 @@
+name: ModMedic
+main: me.PimpDuck.ModMedic.ModMedic
+version: 1.0.0
+api-version: 1.21
+commands:
+  modmedic:
+    description: ModMedic diagnostic commands
+    usage: /modmedic test

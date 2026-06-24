@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+group = 'me.PimpDuck'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+javafx {
+    version = '21'
+    modules = ['javafx.controls', 'javafx.fxml']
+}
+
+dependencies {
+    implementation 'com.google.code.gson:gson:2.11.0'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.7'
+}
+
+application {
+    mainClass = 'me.PimpDuck.ModMedic.Desktop.ModMedicDesktop'
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
