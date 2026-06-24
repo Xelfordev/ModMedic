@@ -1,12 +1,15 @@
 package me.PimpDuck.ModMedic.Desktop.model;
 
-import java.util.Map;
+import com.google.gson.annotations.SerializedName;
 
 public class ErrorPattern {
 
     public static class MatchCriteria {
+        @SerializedName("error_type")
         private String errorType;
+        @SerializedName("stacktrace_contains")
         private String stacktraceContains;
+        @SerializedName("message_contains")
         private String messageContains;
 
         public String getErrorType() { return errorType; }
@@ -32,7 +35,9 @@ public class ErrorPattern {
     private String severity;
     private MatchCriteria match;
     private String diagnosis;
+    @SerializedName("suggested_fix")
     private String suggestedFix;
+    @SerializedName("auto_fix")
     private AutoFix autoFix;
 
     public String getId() { return id; }

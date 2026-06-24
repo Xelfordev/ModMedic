@@ -1,6 +1,7 @@
 package me.PimpDuck.ModMedic.Desktop;
 
 import javafx.application.Application;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import me.PimpDuck.ModMedic.Desktop.engine.*;
 import me.PimpDuck.ModMedic.Desktop.server.ModMedicServer;
@@ -34,13 +35,23 @@ public class ModMedicDesktop extends Application {
         settings.applyTo(llmClient);
         CustomPatternStore customPatternStore = new CustomPatternStore();
 
-        // Start WebSocket server
-        int port = 9876;
+        // Start WebSocket server with configurable port
+        int port = settings.getDesktopPort();
         server = new ModMedicServer(port);
 
         // Create UI
         controller = new MainController(server, patternLoader, customPatternStore, llmClient, settings);
         stage.setScene(controller.createScene(stage));
+
+        // Set app icon
+        try (InputStream icon16 = getClass().getResourceAsStream("/icon.png")) {
+            if (icon16 != null) {
+                stage.getIcons().add(new Image(icon16));
+            }
+        } catch (Exception e) {
+            System.out.println("[ModMedicDesktop] Could not load icon: " + e.getMessage());
+        }
+
         stage.setOnCloseRequest(e -> {
             try {
                 server.stop();

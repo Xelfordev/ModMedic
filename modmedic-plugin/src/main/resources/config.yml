@@ -1,5 +1,17 @@
-# ModMedic configuration
+# ModMedic Configuration
+
+# Desktop connection settings
 desktop_host: localhost
 desktop_port: 9876
+
+# Reconnect interval in seconds when desktop disconnects
 reconnect_interval_seconds: 5
-buffer_size: 50
+
+# Console log capture
+capture_console_log: true
+
+# Number of recent log lines to keep in buffer
+log_buffer_lines: 200
+
+# Include recent console log lines in error payloads sent to desktop
+include_log_in_error_payload: true

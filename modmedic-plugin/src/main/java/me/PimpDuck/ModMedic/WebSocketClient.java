@@ -7,6 +7,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 public class WebSocketClient {
@@ -15,9 +16,10 @@ public class WebSocketClient {
     private final String host;
     private final int port;
     private final int reconnectInterval;
-    private WebSocket ws;
+    private final AtomicReference<WebSocket> ws = new AtomicReference<>();
     private HttpClient client;
     private ScheduledExecutorService scheduler;
+    private volatile boolean shutdown = false;
 
     public WebSocketClient(ModMedic plugin, String host, int port, int reconnectInterval) {
         this.plugin = plugin;
@@ -28,12 +30,13 @@ public class WebSocketClient {
     }
 
     public void connect() {
+        if (shutdown) return;
         String uri = "ws://" + host + ":" + port;
         client.newWebSocketBuilder()
                 .buildAsync(URI.create(uri), new WebSocket.Listener() {
                     @Override
                     public void onOpen(WebSocket webSocket) {
-                        ws = webSocket;
+                        ws.set(webSocket);
                         plugin.getLogger().info("Connected to ModMedic desktop at " + uri);
                         send("{\"type\":\"plugin_connected\",\"plugin\":\"ModMedic\",\"serverVersion\":\"" +
                             plugin.getServer().getVersion() + "\"}");
@@ -54,7 +57,7 @@ public class WebSocketClient {
 
                     @Override
                     public CompletionStage<?> onClose(WebSocket webSocket, int statusCode, String reason) {
-                        ws = null;
+                        ws.set(null);
                         plugin.getLogger().info("Disconnected from desktop (code=" + statusCode + " reason=" + reason + ")");
                         scheduleReconnect();
                         return null;
@@ -63,29 +66,39 @@ public class WebSocketClient {
     }
 
     public void send(String json) {
-        if (ws != null) {
-            ws.sendText(json, true);
+        WebSocket socket = ws.get();
+        if (socket != null) {
+            socket.sendText(json, true);
         }
     }
 
     public boolean isConnected() {
-        return ws != null;
+        return ws.get() != null;
     }
 
     public void shutdown() {
+        shutdown = true;
         if (scheduler != null) {
-            scheduler.shutdown();
+            scheduler.shutdownNow();
+            scheduler = null;
         }
-        if (ws != null) {
-            ws.sendClose(1000, "Plugin shutting down");
+        WebSocket socket = ws.getAndSet(null);
+        if (socket != null) {
+            socket.sendClose(1000, "Plugin shutting down");
         }
     }
 
     private void scheduleReconnect() {
+        if (shutdown) return;
+        if (scheduler != null) {
+            scheduler.shutdownNow();
+        }
         scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduler.schedule(() -> {
-            plugin.getLogger().info("Attempting to reconnect to desktop...");
-            connect();
+            if (!shutdown) {
+                plugin.getLogger().info("Attempting to reconnect to desktop...");
+                connect();
+            }
         }, reconnectInterval, TimeUnit.SECONDS);
     }
 }

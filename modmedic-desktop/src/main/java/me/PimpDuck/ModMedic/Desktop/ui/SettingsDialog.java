@@ -74,8 +74,20 @@ public class SettingsDialog {
         openaiModelField.setPromptText("gpt-4o-mini");
         Label openaiModelLabel = new Label("Model:");
 
+        // Server port
+        Label serverSection = new Label("Server Settings");
+        serverSection.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
+
+        TextField portField = new TextField(String.valueOf(settings.getDesktopPort()));
+        portField.setPromptText("9876");
+        Label portLabel = new Label("WebSocket Port:");
+
+        TextField maxLogField = new TextField(String.valueOf(settings.getMaxLogLines()));
+        maxLogField.setPromptText("1000");
+        Label maxLogLabel = new Label("Max Console Lines:");
+
         // Info text
-        Label infoLabel = new Label("Note: Changes take effect immediately after saving.");
+        Label infoLabel = new Label("Note: Changes take effect after restarting the desktop app.\nPort changes must also be updated in the server's config.yml.");
         infoLabel.setStyle("-fx-text-fill: #888;");
 
         // Buttons
@@ -89,6 +101,9 @@ public class SettingsDialog {
 
         VBox openaiBox = new VBox(5, openaiKeyLabel, openaiKeyField, openaiModelLabel, openaiModelField);
         openaiBox.setPadding(new Insets(0, 0, 0, 20));
+
+        VBox serverBox = new VBox(5, portLabel, portField, maxLogLabel, maxLogField);
+        serverBox.setPadding(new Insets(0, 0, 0, 20));
 
         // Toggle visibility based on provider
         ollamaUrlField.visibleProperty().bind(ollamaRadio.selectedProperty());
@@ -110,6 +125,14 @@ public class SettingsDialog {
             settings.setOllamaModel(ollamaModelField.getText());
             settings.setOpenaiKey(openaiKeyField.getText());
             settings.setOpenaiModel(openaiModelField.getText());
+            try {
+                int port = Integer.parseInt(portField.getText().trim());
+                if (port > 0 && port < 65536) settings.setDesktopPort(port);
+            } catch (NumberFormatException ignored) {}
+            try {
+                int maxLog = Integer.parseInt(maxLogField.getText().trim());
+                if (maxLog > 0) settings.setMaxLogLines(maxLog);
+            } catch (NumberFormatException ignored) {}
             settings.applyTo(llm);
             stage.close();
         });
@@ -117,9 +140,10 @@ public class SettingsDialog {
         cancelBtn.setOnAction(e -> stage.close());
 
         root.getChildren().addAll(header, enableLlm, providerLabel, ollamaRadio, openaiRadio,
-                ollamaSection, ollamaBox, openaiSection, openaiBox, infoLabel, buttons);
+                ollamaSection, ollamaBox, openaiSection, openaiBox,
+                serverSection, serverBox, infoLabel, buttons);
 
-        Scene scene = new Scene(root, 500, 600);
+        Scene scene = new Scene(root, 520, 650);
         scene.getStylesheets().add(getClass().getResource("/dark.css").toExternalForm());
         stage.setScene(scene);
         stage.showAndWait();

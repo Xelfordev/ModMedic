@@ -5,8 +5,6 @@ import org.bukkit.plugin.Plugin;
 import com.destroystokyo.paper.event.server.ServerExceptionEvent;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.server.PluginDisableEvent;
-import org.bukkit.event.server.PluginEnableEvent;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
@@ -17,9 +15,13 @@ public class ErrorListener implements Listener {
 
     private final ModMedic plugin;
     private final List<String> recentLog = new ArrayList<>();
+    private final int maxLogLines;
+    private final boolean includeLogInPayload;
 
     public ErrorListener(ModMedic plugin) {
         this.plugin = plugin;
+        this.maxLogLines = plugin.getConfig().getInt("log_buffer_lines", 200);
+        this.includeLogInPayload = plugin.getConfig().getBoolean("include_log_in_error_payload", true);
     }
 
     @EventHandler
@@ -41,16 +43,19 @@ public class ErrorListener implements Listener {
                 stacktrace,
                 causedBy,
                 System.currentTimeMillis(),
-                new ArrayList<>(recentLog)
+                includeLogInPayload ? new ArrayList<>(recentLog) : null
         );
 
         plugin.getWsClient().send(toJson(payload));
     }
 
     public void logLine(String line) {
-        recentLog.add(line);
-        if (recentLog.size() > 200) {
-            recentLog.remove(0);
+        if (line == null) return;
+        synchronized (recentLog) {
+            recentLog.add(line);
+            if (recentLog.size() > maxLogLines) {
+                recentLog.remove(0);
+            }
         }
     }
 
@@ -58,9 +63,12 @@ public class ErrorListener implements Listener {
         for (Plugin p : Bukkit.getPluginManager().getPlugins()) {
             String mainClass = p.getDescription().getMain();
             if (mainClass != null) {
-                String pkg = mainClass.substring(0, mainClass.lastIndexOf('.'));
-                if (stacktrace.contains(pkg)) {
-                    return p.getName();
+                int lastDot = mainClass.lastIndexOf('.');
+                if (lastDot > 0) {
+                    String pkg = mainClass.substring(0, lastDot);
+                    if (stacktrace.contains(pkg)) {
+                        return p.getName();
+                    }
                 }
             }
         }
@@ -71,23 +79,39 @@ public class ErrorListener implements Listener {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
+        pw.close();
         return sw.toString();
     }
 
     private String toJson(ErrorPayload p) {
-        return "{" +
-                "\"plugin\":\"" + escape(p.getPlugin()) + "\"," +
-                "\"serverVersion\":\"" + escape(p.getServerVersion()) + "\"," +
-                "\"errorType\":\"" + escape(p.getErrorType()) + "\"," +
-                "\"message\":\"" + escape(p.getMessage()) + "\"," +
-                "\"stacktrace\":\"" + escape(p.getStacktrace()) + "\"," +
-                "\"causedBy\":\"" + escape(p.getCausedBy()) + "\"," +
-                "\"timestamp\":" + p.getTimestamp() +
-                "}";
+        StringBuilder sb = new StringBuilder();
+        sb.append("{");
+        sb.append("\"type\":\"error\",");
+        sb.append("\"plugin\":\"").append(escape(p.getPlugin())).append("\",");
+        sb.append("\"serverVersion\":\"").append(escape(p.getServerVersion())).append("\",");
+        sb.append("\"errorType\":\"").append(escape(p.getErrorType())).append("\",");
+        sb.append("\"message\":\"").append(escape(p.getMessage())).append("\",");
+        sb.append("\"stacktrace\":\"").append(escape(p.getStacktrace())).append("\",");
+        sb.append("\"causedBy\":\"").append(escape(p.getCausedBy())).append("\",");
+        sb.append("\"timestamp\":").append(p.getTimestamp());
+        if (p.getRecentLog() != null && !p.getRecentLog().isEmpty()) {
+            sb.append(",\"recentLog\":[");
+            for (int i = 0; i < p.getRecentLog().size(); i++) {
+                if (i > 0) sb.append(",");
+                sb.append("\"").append(escape(p.getRecentLog().get(i))).append("\"");
+            }
+            sb.append("]");
+        }
+        sb.append("}");
+        return sb.toString();
     }
 
     private String escape(String s) {
         if (s == null) return "";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t");
+        return s.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\t", "\\t");
     }
 }

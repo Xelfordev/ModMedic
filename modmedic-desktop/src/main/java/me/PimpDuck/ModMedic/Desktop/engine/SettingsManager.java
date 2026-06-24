@@ -19,6 +19,8 @@ public class SettingsManager {
     private String ollamaModel = "llama3.2";
     private String openaiKey = "";
     private String openaiModel = "gpt-4o-mini";
+    private int desktopPort = 9876;
+    private int maxLogLines = 1000;
 
     public SettingsManager() {
         this.settingsPath = Paths.get(System.getProperty("user.home"), ".modmedic", "settings.json");
@@ -43,6 +45,12 @@ public class SettingsManager {
     public String getOpenaiModel() { return openaiModel; }
     public void setOpenaiModel(String v) { openaiModel = v; save(); }
 
+    public int getDesktopPort() { return desktopPort; }
+    public void setDesktopPort(int v) { desktopPort = v; save(); }
+
+    public int getMaxLogLines() { return maxLogLines; }
+    public void setMaxLogLines(int v) { maxLogLines = v; save(); }
+
     public void applyTo(LlmClient llm) {
         llm.setEnabled(llmEnabled);
         llm.setProvider(llmProvider.equalsIgnoreCase("OPENAI") ? LlmClient.Provider.OPENAI : LlmClient.Provider.OLLAMA);
@@ -65,6 +73,8 @@ public class SettingsManager {
                         this.ollamaModel = loaded.ollamaModel;
                         this.openaiKey = loaded.openaiKey;
                         this.openaiModel = loaded.openaiModel;
+                        this.desktopPort = loaded.desktopPort;
+                        this.maxLogLines = loaded.maxLogLines;
                     }
                 }
             }
